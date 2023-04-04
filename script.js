@@ -351,7 +351,7 @@ function updateSampler() {
         for (let i = 0; i < notes.length; i++) {
             const originalOctave = octave + octaveOffset;
             const noteName = notes[i] + octave;
-            const fileName = notes[i].replace("#", "s") + originalOctave;
+            const fileName = notes[i].toLowerCase().replace("#", "s") + originalOctave;
             sampleURLs[noteName] = soundPath + `/${fileName}.mp3`;
         }
     }
