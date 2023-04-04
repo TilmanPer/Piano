@@ -368,9 +368,6 @@ function updateSampler() {
     sampler.connect(monoEffect);
 }
 
-
-
-
 const rangeUpdate = function (e) {
     updateKeys();
 }
