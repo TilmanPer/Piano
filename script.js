@@ -350,26 +350,24 @@ function updateSampler() {
     for (let octave = 0; octave <= 8; octave++) {
         for (let i = 0; i < notes.length; i++) {
             const originalOctave = octave + octaveOffset;
-
-            if (originalOctave === -1 && i < 9) {
-                continue;
-            }
-            if (originalOctave === 7 && i > 0) {
-                continue;
-            }
-
             const noteName = notes[i] + octave;
-            const fileName = notes[i].toLowerCase().replace("#", "s") + originalOctave;
+            const fileName = notes[i].replace("#", "s") + originalOctave;
             sampleURLs[noteName] = soundPath + `/${fileName}.mp3`;
         }
     }
+    console.log(sampleURLs);
 
     sampler = new Tone.Sampler(sampleURLs, {
         // Envelope
         releaseCurve: "exponential",
         release: 1
-    }).toDestination();
+    });
+
+    // Mono-Effekt hinzufügen
+    const monoEffect = new Tone.Mono().toDestination();
+    sampler.connect(monoEffect);
 }
+
 
 
 
