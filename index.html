@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Virtual Piano</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;800&family=Outfit:wght@200&family=Rowdies:wght@700&display=swap"
+        rel="stylesheet">
+</head>
+
+<header>
+    <div class="logo">
+        <img class="logoImg" src="./assets/favicon.ico">
+        <h1>VIRTUAL PIANO</h1>
+    </div>
+
+    <input type="range" class="sliderSquare" id="keyAmountSlider" value="0" min="0" max="36" step="12"
+        oninput="rangeUpdate()" ondblclick="this.value = 0; rangeUpdate()">
+    <div id="keyAmount"></div>
+
+
+    <div class="openAdvanced" id="openAdvancedSettings">
+        Advanced
+    </div>
+
+    <select id="soundSelect">
+        <option value="GreatAndSoftPiano">Soft</option>
+        <option value="HardPiano">Hard</option>
+        <option value="Harp">Harp</option>
+        <option value="Harpsicord">Harpsicord</option>
+        <option value="Steinway_Grand">Steinway Grand</option>
+        <option value="Untitled">Random</option>
+        <option value="Vintage_Upright">Vintage</option>
+        <option value="Vintage_Upright_Soft">Vintage Soft</option>
+        <option value="mppclassic">mpp</option>
+        <option value="Rhodes_MK1">Rhodes</option>
+        <option value="Music_Box">Music Box</option>
+    </select>
+</header>
+
+<body>
+    <div class="instructions">
+        <p>
+            <span class="spacebar"><strong>SPACEBAR</strong></span>
+            sustain
+        </p>
+        <p>
+            connect your <strong>MIDI PIANO</strong>
+        </p>
+        <p>
+            or use the <strong>MOUSE</strong> to play
+        </p>
+    </div>
+    <div id="velocity-curve-editor" style="width: 500px; height: 300px;">
+        <canvas id="velocityCurveCanvas" width="500" height="300"></canvas>
+    </div>
+    <div id="pianoContainer">
+        <div class="controlsContainer" id="controlsContainer">
+            <p id="sustainIndicator" class="sustainIndicator"></p>
+            <input type="range" min="-40" max="40" value="25" class="sliderSquare" id="volumeSlider"
+                oninput="volume = this.value" ondblclick="this.value = 0; volume = 0">
+        </div>
+        <div id="piano"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/tone/build/Tone.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
