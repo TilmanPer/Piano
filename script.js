@@ -331,15 +331,23 @@ Harpsicord
 
 */
 
-let soundStyle = "Harpsicord";
-let soundPath = localStorage.getItem("soundPath") ? localStorage.getItem("soundPath") : `./sounds/${soundStyle}`;
-document.getElementById("soundSelect").addEventListener('change', event => {
+let soundStyle = "Steinway_Grand";
+let soundPath = `./sounds/${soundStyle}`;
+if (localStorage.getItem("soundPath")){
+    soundPath = localStorage.getItem("soundPath");
+    soundStyle = soundPath.split("/").pop();
+    console.log(soundStyle);
+}
+let soundSelect = document.getElementById("soundSelect");
+soundSelect.addEventListener('change', event => {
+    piano.classList.add("not-ready");
     soundStyle = event.target.value;
     soundPath = `./sounds/${soundStyle}`;
     localStorage.setItem('soundPath', soundPath);
     updateSampler();
     updateKeys();
 });
+soundSelect.value = soundStyle;
 
 function updateSampler() {
     // Define the sample URLs and create the sampler with Tone.js
@@ -350,12 +358,19 @@ function updateSampler() {
     for (let octave = 0; octave <= 8; octave++) {
         for (let i = 0; i < notes.length; i++) {
             const originalOctave = octave + octaveOffset;
+
+            if (originalOctave === -1 && i < 9) {
+                continue;
+            }
+            if (originalOctave === 7 && i > 8) {
+                continue;
+            }
+
             const noteName = notes[i] + octave;
-            const fileName = notes[i].toLowerCase().replace("#", "s") + originalOctave;
+            const fileName = notes[i].replace("#", "s") + originalOctave;
             sampleURLs[noteName] = soundPath + `/${fileName}.mp3`;
         }
     }
-    console.log(sampleURLs);
 
     sampler = new Tone.Sampler(sampleURLs, {
         // Envelope
@@ -366,6 +381,8 @@ function updateSampler() {
     // Mono-Effekt hinzufügen
     const monoEffect = new Tone.Mono().toDestination();
     sampler.connect(monoEffect);
+    console.log("done");
+    piano.classList.remove("not-ready");
 }
 
 const rangeUpdate = function (e) {
