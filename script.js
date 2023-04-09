@@ -367,7 +367,7 @@ function updateSampler() {
             }
 
             const noteName = notes[i] + octave;
-            const fileName = notes[i].replace("#", "s") + trueOctave;
+            const fileName = notes[i].toLowerCase().replace("#", "s") + trueOctave;
             sampleURLs[noteName] = soundPath + `/${fileName}.mp3`;
         }
     }
@@ -381,8 +381,7 @@ function updateSampler() {
     // Mono-Effekt hinzufügen
     const monoEffect = new Tone.Mono().toDestination();
     sampler.connect(monoEffect);
-    console.log("done");
-    piano.classList.remove("not-ready");
+    piano.classList.remove("not-ready"); //not working properly. Is called before the sound is loaded.
 }
 
 const rangeUpdate = function (e) {
