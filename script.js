@@ -13,7 +13,6 @@ const sustainCode = 64;
 let isSustain = false;
 
 
-
 window.addEventListener('load', function (e) {
     volume = volumeInput.value;
     instructions.classList.add("fadeOut");
@@ -61,6 +60,8 @@ navigator.requestMIDIAccess()
     .catch(error => console.log("Error: " + error));
 
 function triggerAttack(key, velocity) {
+    if (piano.classList.contains("not-ready"))
+        return;
     sampler.volume.value = volume;
     const note = key.dataset.notenumber;
     // Add the key-pressed class to the key element
@@ -127,49 +128,60 @@ document.getElementById("sustainIndicator").addEventListener('click', function (
 
 //Keybinds for Keyboard
 let keybinds = {
-    "IntlBackslash": 33,
-    "KeyA": 34,
-    "KeyZ": 35,
-    "KeyX": 36,
-    "KeyD": 37,
-    "KeyC": 38,
-    "KeyF": 39,
-    "KeyV": 40,
-    "KeyB": 41,
-    "KeyH": 42,
-    "KeyN": 43,
-    "KeyJ": 44,
-    "KeyM": 45,
-    "KeyK": 46,
-    "Comma": 47,
-    "KeyQ": 48,
-    "Digit2": 49,
-    "KeyW": 50,
-    "Digit3": 51,
-    "KeyE": 52,
-    "KeyR": 53,
-    "Digit5": 54,
-    "KeyT": 55,
-    "Digit6": 56,
-    "KeyY": 57,
-    "Digit7": 58,
-    "KeyU": 59,
-    "KeyI": 60,
-    "Digit9": 61,
-    "KeyO": 62,
-    "Digit0": 63,
-    "KeyP": 64,
-    "BracketLeft": 65,
-    "Equal": 66,
-    "BracketRight": 67,
-    "KeyL": 68,
-    "Semicolon": 69,
-    "Quote": 70,
-    "Backslash": 71
+    "IntlBackslash": 0,
+    "KeyA": 0,
+    "KeyZ": 0,
+    "KeyX": 0,
+    "KeyD": 0,
+    "KeyC": 0,
+    "KeyF": 0,
+    "KeyV": 0,
+    "KeyB": 0,
+    "KeyH": 0,
+    "KeyN": 0,
+    "KeyJ": 0,
+    "KeyM": 0,
+    "KeyK": 0,
+    "Comma": 0,
+    "KeyQ": 0,
+    "Digit2": 0,
+    "KeyW": 0,
+    "Digit3": 0,
+    "KeyE": 0,
+    "KeyR": 0,
+    "Digit5": 0,
+    "KeyT": 0,
+    "Digit6": 0,
+    "KeyY": 0,
+    "Digit7": 0,
+    "KeyU": 0,
+    "KeyI": 0,
+    "Digit9": 0,
+    "KeyO": 0,
+    "Digit0": 0,
+    "KeyP": 0,
+    "BracketLeft": 0,
+    "Equal": 0,
+    "BracketRight": 0,
+    "KeyL": 0,
+    "Semicolon": 0,
+    "Quote": 0,
+    "Backslash": 0
 };
 
 
+let startOctave = 2;
+let startPoint = 21 + 12 * startOctave;
+let index = 0;
+for (const bind in keybinds) {
+    keybinds[bind] = startPoint + index;
+    index++;
+}
+
+
 document.addEventListener('keydown', event => {
+    if (piano.classList.contains("not-ready"))
+        return;
     if (event.code === sustainKey) {
         if (!isSustain)
             triggerSustain();
@@ -183,7 +195,8 @@ document.addEventListener('keydown', event => {
 });
 
 document.addEventListener('keyup', event => {
-
+    if (piano.classList.contains("not-ready"))
+        return;
     if (isSustain && event.code === sustainKey) {
         releaseSustain();
         return;
@@ -198,7 +211,8 @@ document.addEventListener('keyup', event => {
     }
 });
 
-function loadPiano() {
+async function loadPiano() {
+    await updateSampler();
     for (let i = firstKey; i <= lastKey; i++) {
         const key = document.createElement("div");
         key.className = "key";
@@ -333,7 +347,7 @@ Harpsicord
 
 let soundStyle = "Steinway_Grand";
 let soundPath = `./sounds/${soundStyle}`;
-if (localStorage.getItem("soundPath")){
+if (localStorage.getItem("soundPath")) {
     soundPath = localStorage.getItem("soundPath");
     soundStyle = soundPath.split("/").pop();
     console.log(soundStyle);
@@ -349,7 +363,7 @@ soundSelect.addEventListener('change', event => {
 });
 soundSelect.value = soundStyle;
 
-function updateSampler() {
+async function updateSampler() {
     // Define the sample URLs and create the sampler with Tone.js
     const sampleURLs = {};
     const octaveOffset = -1;
@@ -372,22 +386,35 @@ function updateSampler() {
         }
     }
 
-    sampler = new Tone.Sampler(sampleURLs, {
-        // Envelope
-        releaseCurve: "exponential",
-        release: 1
-    });
 
-    // Mono-Effekt hinzufügen
-    const monoEffect = new Tone.Mono().toDestination();
-    sampler.connect(monoEffect);
-    piano.classList.remove("not-ready"); //not working properly. Is called before the sound is loaded.
+    try {
+        sampler = new Tone.Sampler(sampleURLs, {
+            // Envelope
+            releaseCurve: "exponential",
+            release: 1,
+            onload: () => {
+
+                piano.classList.remove("not-ready"); //not working properly. Is called before the sound is loaded.
+                console.log('Sampler loaded successfully');
+            },
+            onerror: () => {
+            }
+        });
+
+        // Mono-Effekt hinzufügen
+        const monoEffect = new Tone.Mono().toDestination();
+        sampler.connect(monoEffect);
+
+    } catch (error) {
+        console.error('There was an error with the sampler');
+    }
 }
 
 const rangeUpdate = function (e) {
     updateKeys();
 }
 
+piano.classList.add("not-ready");
 updateSampler();
 updateKeys();
 
