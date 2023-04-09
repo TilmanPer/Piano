@@ -357,17 +357,17 @@ function updateSampler() {
 
     for (let octave = 0; octave <= 8; octave++) {
         for (let i = 0; i < notes.length; i++) {
-            const originalOctave = octave + octaveOffset;
+            const trueOctave = octave + octaveOffset;
 
-            if (originalOctave === -1 && i < 9) {
+            if (trueOctave === -1 && i < 9) {
                 continue;
             }
-            if (originalOctave === 7 && i > 8) {
+            if (trueOctave === 7 && i > 0) {
                 continue;
             }
 
             const noteName = notes[i] + octave;
-            const fileName = notes[i].replace("#", "s") + originalOctave;
+            const fileName = notes[i].replace("#", "s") + trueOctave;
             sampleURLs[noteName] = soundPath + `/${fileName}.mp3`;
         }
     }
