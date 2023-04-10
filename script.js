@@ -36,7 +36,6 @@ navigator.requestMIDIAccess()
             const key = document.querySelector(`.key[data-notenumber="${notenumber}"]`);
 
             // Check for Sustain Pedal MIDI Controller Code
-
             if (event.data[0] === 176 && event.data[1] === 64) {
                 triggerSustain();
                 if (event.data[2] === 0) {
@@ -333,17 +332,7 @@ const audioContext = new Tone.Context({
     lookAhead: 0.01, // Adjust this value to a smaller number (in seconds) to reduce the buffer size
 });
 
-// Set the new context as the default context for Tone.js
 Tone.setContext(audioContext);
-
-
-/*Good Sounds:
-GreatAndSoftPiano
-HardPiano (is Ok)
-Harp
-Harpsicord
-
-*/
 
 let soundStyle = "Steinway_Grand";
 let soundPath = `./sounds/${soundStyle}`;

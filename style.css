@@ -91,7 +91,6 @@ header {
 
 #openAdvancedSettings{
   height: 50px;
-  width: 100px;
   background-color: #111;
   border: solid 1px white;
   display: flex;
@@ -114,6 +113,7 @@ header {
   appearance: none;
   text-align: center;
   font-size: large;
+  width: 200px;
 }
 
 .settingsItem:focus, .settingsItem:active  {
