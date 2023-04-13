@@ -2,61 +2,147 @@ const piano = document.getElementById("piano");
 const keySlider = document.getElementById("keyAmountSlider");
 const instructions = document.querySelector('.instructions');
 const volumeInput = document.getElementById('volumeSlider');
-let firstKey = 21;
-let lastKey = 108;
+let firstKey = 21;  // A0
+let lastKey = 108; // C8
+let keyVelocity = 127; // 0-127
 let pianoLength = lastKey - firstKey + 1;
 let volume = 0;
-let pianoWidthPx = 0;
+let pianoWidthPx = 0; 
 
 const sustainKey = "Space";
-const sustainCode = 64;
+const sustainCode = 64; // MIDI Controller Code for Sustain Pedal
 let isSustain = false;
 
+let recordedEvents = [];
+let playlist = [];
+let isRecording = false;
+let isPlaying = false;
+let timestamp = 0; // Used to calculate the timing of recorded events
+let songIndex = 0; 
 
 window.addEventListener('load', function (e) {
-    volume = volumeInput.value;
+    volume = volumeInput.value; 
     instructions.classList.add("fadeOut");
 });
 
 // Initialize Web MIDI API
 navigator.requestMIDIAccess()
     .then(midiAccess => {
-        // Get the first MIDI input device (assumes it's the Yamaha P45B)
+        // Get the first MIDI input device
         input = midiAccess.inputs.values().next().value;
 
         // Listen for MIDI messages on the input device
-        input.onmidimessage = event => {
-            // Get the MIDI note number and velocity
-            const notenumber = event.data[1];
-            const velocity = event.data[2];
-
-            //if (event.data[0] != 248 && event.data[0] != 254)
-
-            // Get the corresponding key element
-            const key = document.querySelector(`.key[data-notenumber="${notenumber}"]`);
-
-            // Check for Sustain Pedal MIDI Controller Code
-            if (event.data[0] === 176 && event.data[1] === 64) {
-                triggerSustain();
-                if (event.data[2] === 0) {
-                    releaseSustain();
-                }
-            }
-
-            // Note on message
-            if (event.data[0] === 144 && velocity != 0) {
-                triggerAttack(key, velocity)
-            }// Note released message
-            else if (event.data[0] === 144 && velocity == 0 && !isSustain) {
-                triggerCutoff(key);
-            }// Note released but sustained message
-            else if ((event.data[0] === 144 & velocity == 0) && isSustain) {
-                triggerRelease(key);
-            }
-        };
+        input.onmidimessage = handleMIDIMessage;
 
     })
     .catch(error => console.log("Error: " + error));
+// 
+function handleMIDIMessage(event) {
+    if (event.data != 254 && event.data != 248)
+        console.log(event.data);
+    // Get the MIDI note number and velocity
+    const notenumber = event.data[1];
+    const velocity = event.data[2];
+
+    // Get the corresponding key element
+    const key = document.querySelector(`.key[data-notenumber="${notenumber}"]`);
+
+    // Check for Sustain Pedal MIDI Controller Code
+    if (event.data[0] === 176 && event.data[1] === 64) {
+        triggerSustain();
+        if (event.data[2] === 0) {
+            releaseSustain();
+        }
+    }
+
+    // Note on message
+    if (event.data[0] === 144 && velocity != 0) {
+        triggerAttack(key, velocity);
+    }// Note released message
+    else if (event.data[0] === 144 && velocity == 0 && !isSustain) {
+        triggerCutoff(key);
+    }// Note released but sustained message
+    else if ((event.data[0] === 144 & velocity == 0) && isSustain) {
+        triggerRelease(key);
+    }
+
+    if (isRecording) {
+        if (event.data == 254 || event.data == 248) {
+            return;
+        }
+        console.log("Recording Event: " + event.data);
+        recordedEvents.push({
+            event: event,
+            timing: performance.now() - timestamp
+        });
+    }
+}
+
+
+function simulateNote(status, noteNumber, velocity) {
+    // Note on message
+    const message = {
+        data: [status, noteNumber, velocity]
+    };
+    handleMIDIMessage(message);
+}
+
+function startRecording() {
+    console.log("Recording Started");
+    isRecording = true;
+    recordedEvents = [];
+    timestamp = performance.now();
+}
+
+function stopRecording() {
+    console.log("Recording Stopped");
+    playlist.push(recordedEvents);
+    /*const deleteButton = document.createElement("button");
+    deleteButton.innerHTML = "⛔";
+    deleteButton.addEventListener("click", function () {
+        playlist.splice(playlist.length, 1);
+        songSelect.remove(playlist.length);
+        songIndex--;
+        songSelect.selectedIndex--;
+    });
+*/ //TODO: Add delete button functionality
+    songSelect.innerHTML += "<option>Song " + playlist.length + "</option>";
+    isRecording = false;
+}
+
+function playSong(index) {
+    console.log("Playing Song " + index);
+    if (!playlist[index]) {
+        console.log("No song at index " + index);
+        return;
+    }
+    if (!isRecording && recordedEvents.length > 0) {
+        isPlaying = true;
+        playlist[index].forEach(recordedEvent => {
+            setTimeout(() => {
+                console.log("Playing Event: " + recordedEvent.event.data);
+                handleMIDIMessage(recordedEvent.event);
+            }, recordedEvent.timing);
+        });
+        // After the playback has finished, set the isPlaying flag to false
+        setTimeout(() => {
+            console.log("Song " + index + " finished playing");
+            isPlaying = false;
+        }, playlist[index][playlist[index].length - 1].timing);
+    }
+}
+
+songSelect = document.getElementById("songSelect");
+songSelect.addEventListener("change", function () {
+    songIndex = songSelect.selectedIndex;
+});
+checkbox = document.getElementById('toggleRecording')
+checkbox.addEventListener('keydown', event => {
+    if (event.code === 'Space') {
+        event.preventDefault();
+    }
+});
+checkbox.checked = false;
 
 function triggerAttack(key, velocity) {
     if (piano.classList.contains("not-ready"))
@@ -183,13 +269,13 @@ document.addEventListener('keydown', event => {
         return;
     if (event.code === sustainKey) {
         if (!isSustain)
-            triggerSustain();
+            simulateNote(176, 64, 127);
         return;
     }
     if (Object.keys(keybinds).includes(event.code)) {
         const key = document.querySelector(`[data-notenumber="${keybinds[event.code]}"]`);
         if (!key.classList.contains("currently-pressed"))
-            triggerAttack(key, 127);
+            simulateNote(144, keybinds[event.code], keyVelocity);
     }
 });
 
@@ -197,16 +283,14 @@ document.addEventListener('keyup', event => {
     if (piano.classList.contains("not-ready"))
         return;
     if (isSustain && event.code === sustainKey) {
-        releaseSustain();
+        simulateNote(176, 64, 0);
         return;
     }
 
     if (Object.keys(keybinds).includes(event.code)) {
         const key = document.querySelector(`[data-notenumber="${keybinds[event.code]}"]`);
-        if (isSustain)
-            triggerRelease(key);
-        else
-            triggerCutoff(key);
+        if (key.classList.contains("key-pressed"))
+            simulateNote(144, keybinds[event.code], 0);
     }
 });
 
@@ -284,22 +368,13 @@ async function loadPiano() {
         key.addEventListener('mousedown', () => {
             key.addEventListener('mouseout', () => {
                 if (!key.classList.contains("currently-pressed")) return;
-                if (!isSustain) {
-                    triggerCutoff(key);
-                }
-                else {
-                    triggerRelease(key);
-                }
+                simulateNote(144, key.dataset.notenumber, 0);
             }, { once: true });
-            triggerAttack(key, 127);
-        });
-        key.addEventListener('mouseup', () => {
-            if (!isSustain) {
-                triggerCutoff(key);
-            }
-            else {
-                triggerRelease(key);
-            }
+
+            key.addEventListener('mouseup', () => {
+                simulateNote(144, key.dataset.notenumber, 0);
+            });
+            simulateNote(144, key.dataset.notenumber, keyVelocity);
         });
 
         piano.appendChild(key);
@@ -575,6 +650,7 @@ function toggleCurveEditorDisplay() {
         curveEditor.style.visibility = "hidden";
     }
 }
+
 
 window.addEventListener('load', () => {
     initializeEditor();
