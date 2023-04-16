@@ -41,7 +41,7 @@
             <option value="Vintage_Upright_Soft">Vintage Soft</option>
             <option value="mppclassic">mpp</option>
             <option class="not-ready">Rhodes</option>
-            <option value="record_Box">record Box</option>
+            <option value="Music_Box">Music Box</option>
         </select>
     </div>
 </header>
@@ -74,14 +74,17 @@
     <div class="recordNavigateContainer">
         <input type="checkbox" class="recordNavigate toggleRecording" id="toggleRecording"
             onchange="isRecording ? stopRecording() : startRecording();" checked="false">
-        <button type="button" class="recordNavigate"
-            onclick="songIndex > 0 ? (playSong(--songIndex), songSelect.selectedIndex--,true) : false;">
+        <button type="button" class="recordNavigate" onclick="
+            if(!isPlaying)
+                playSong(songSelect.selectedIndex = songSelect.selectedIndex > 0 ? songSelect.selectedIndex-1 : songSelect.selectedIndex = playlist.length -1)
+                ">
             << </button>
-                <button type="button" class="recordNavigate" style="margin-left: 5px; margin-right:5px;" onclick="!isPlaying ? playSong(songIndex) : '';
+                <button type="button" class="recordNavigate" style="margin-left: 5px; margin-right:5px;" onclick="!isPlaying ? playSong(songSelect.selectedIndex) : '';
         this.innerHTML = isPlaying ? '<!-- ⏸ -->▶' : '▶'">▶
                 </button>
-                <button type="button" class="recordNavigate"
-                    onclick="songIndex < playlist.length - 1 ? (playSong(++songIndex), songSelect.selectedIndex++,true) : false;">>>
+                <button type="button" class="recordNavigate" onclick="if(!isPlaying)
+                playSong(songSelect.selectedIndex = songSelect.selectedIndex+1 < playlist.length ? songSelect.selectedIndex+1 : songSelect.selectedIndex = 0)
+                ">>>
                 </button>
                 <select class="settingsItem" id="songSelect">
                 </select>
