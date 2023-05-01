@@ -1,7 +1,9 @@
 const piano = document.getElementById("piano");
 const keySlider = document.getElementById("keyAmountSlider");
-const instructions = document.querySelector('.instructions');
 const volumeInput = document.getElementById('volumeSlider');
+
+const instructions = document.querySelector('.instructions');
+const startScreen = document.querySelector('.startScreen');
 let firstKey = 21;  // A0
 let lastKey = 108; // C8
 let keyVelocity = 127; // 0-127
@@ -13,14 +15,16 @@ const sustainKey = "Space";
 const sustainCode = 64; // MIDI Controller Code for Sustain Pedal
 let isSustain = false;
 
-let recordedEvents = [];
-let playlist = [];
-let isRecording = false;
-let isPlaying = false;
-let timestamp = 0; // Used to calculate the timing of recorded events
 window.addEventListener('load', function (e) {
     volume = volumeInput.value;
-    instructions.classList.add("fadeOut");
+});
+
+startScreen.addEventListener("click", function (e) {
+    this.style.opacity = '0';
+    setTimeout(() => {
+        this.style.display = 'none';
+        instructions.classList.add('fadeOut');
+    }, 1000);
 });
 
 // Initialize Web MIDI API
@@ -34,10 +38,11 @@ navigator.requestMIDIAccess()
 
     })
     .catch(error => console.log("Error: " + error));
-// 
+ 
 function handleMIDIMessage(event) {
-    if (event.data != 254 && event.data != 248)
-        console.log(event.data);
+    // if (event.data != 254 && event.data != 248)
+    //     console.log(event.data);
+
     // Get the MIDI note number and velocity
     const notenumber = event.data[1];
     const velocity = event.data[2];
@@ -84,81 +89,6 @@ function simulateNote(status, noteNumber, velocity) {
     };
     handleMIDIMessage(message);
 }
-
-function startRecording() {
-    console.log("Recording Started");
-    isRecording = true;
-    recordedEvents = [];
-    timestamp = performance.now();
-}
-
-function stopRecording() {
-    console.log("Recording Stopped");
-    playlist.push(recordedEvents);
-    updateLocalPLaylist();
-    /*const deleteButton = document.createElement("button");
-    deleteButton.innerHTML = "⛔";
-    deleteButton.addEventListener("click", function () {
-        playlist.splice(playlist.length, 1);
-        songSelect.remove(playlist.length);
-        songSelect.selectedIndex
-    --;
-        songSelect.selectedIndex--;
-    });
-*/ //TODO: Add delete button functionality
-    songSelect.innerHTML += "<option>Song " + playlist.length + "</option>";
-    songSelect.selectedIndex = playlist.length-1;
-    isRecording = false;
-}
-
-function updateLocalPLaylist() {
-    localStorage.setItem("playlist", JSON.stringify(playlist));
-}
-
-function loadLocalPlaylist() {
-    playlist = JSON.parse(localStorage.getItem("playlist"));
-    let index = 1;
-    playlist.forEach(song => {
-        songSelect.innerHTML += "<option>Song " + index + "</option>";
-        index++;
-    });
-}
-
-function playSong(index) {
-    console.log("Playing Song " + index);
-    console.log(playlist[index]);
-    if (!playlist[index]) {
-        console.log("No song at index " + index);
-        return;
-    }
-    if (!isRecording && playlist.length > 0) {
-        isPlaying = true;
-        playlist[index].forEach(recordedEvent => {
-            setTimeout(() => {
-                console.log("Playing Event: " + recordedEvent.event.data);
-                handleMIDIMessage(recordedEvent.event);
-            }, recordedEvent.timing);
-        });
-        // After the playback has finished, set the isPlaying flag to false
-        setTimeout(() => {
-            console.log("Song " + index + " finished playing");
-            isPlaying = false;
-        }, playlist[index][playlist[index].length - 1].timing);
-    }
-}
-
-songSelect = document.getElementById("songSelect");
-songSelect.addEventListener("change", function () {
-    songSelect.selectedIndex
- = songSelect.selectedIndex;
-});
-checkbox = document.getElementById('toggleRecording')
-checkbox.addEventListener('keydown', event => {
-    if (event.code === 'Space') {
-        event.preventDefault();
-    }
-});
-checkbox.checked = false;
 
 function triggerAttack(key, velocity) {
     if (piano.classList.contains("not-ready"))
@@ -498,181 +428,10 @@ piano.classList.add("not-ready");
 updateSampler();
 updateKeys();
 
-
-//MIDI CURVE XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-function applyMidiCurve(velocity) {
-    const inputRange = 127;
-    const outputRange = canvas.height;
-    const inputX = (velocity / inputRange) * canvas.width;
-    let outputY;
-
-    const points = Array.from(document.getElementsByClassName('point')).map(point => ({
-        x: point.getBoundingClientRect().left - canvas.getBoundingClientRect().left + 5,
-        y: point.getBoundingClientRect().top - canvas.getBoundingClientRect().top + 5
-    }));
-
-    points.sort((a, b) => a.x - b.x);
-
-    for (let i = 0; i < points.length - 1; i++) {
-        if (inputX >= points[i].x && inputX <= points[i + 1].x) {
-            const progress = (inputX - points[i].x) / (points[i + 1].x - points[i].x);
-            outputY = points[i].y + progress * (points[i + 1].y - points[i].y);
-            break;
-        }
-    }
-
-    return Math.round(((outputRange - outputY) / outputRange) * inputRange);
-}
-
-function createPoint(x, y, restrictMovement) {
-    const point = document.createElement('div');
-    point.classList.add('point');
-    point.style.left = x + 'px';
-    point.style.top = y + 'px';
-
-    // Drag and Drop functionality
-    point.onmousedown = function (event) {
-        event.preventDefault();
-        event.stopPropagation(); // Verhindert das Erstellen eines weiteren Punktes beim Loslassen
-
-        let shiftX = event.clientX - point.getBoundingClientRect().left;
-        let shiftY = event.clientY - point.getBoundingClientRect().top;
-
-        function onMouseMove(event) {
-            let newX = event.clientX - shiftX - canvas.getBoundingClientRect().left;
-            let newY = event.clientY - shiftY - canvas.getBoundingClientRect().top;
-
-            // Verhindert, dass Punkte außerhalb des Canvas verschoben werden
-            newX = Math.min(Math.max(newX, 0), canvas.width);
-            newY = Math.min(Math.max(newY, 0), canvas.height);
-
-            if (!restrictMovement) {
-                point.style.left = newX + 'px';
-            }
-            point.style.top = newY + 'px';
-            updateCanvas();
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        document.addEventListener('mouseup', () => {
-            document.removeEventListener('mousemove', onMouseMove);
-        }, { once: true });
-    };
-
-    // Remove point on right click
-    point.addEventListener('contextmenu', event => {
-        event.preventDefault();
-        point.remove();
-        updateCanvas();
-
-        // Punkte im Local Storage aktualisieren
-        const updatedPoints = getPointsFromLocalStorage().filter(p => p.x !== parseInt(point.style.left.slice(0, -2)) || p.y !== parseInt(point.style.top.slice(0, -2)));
-        savePointsToLocalStorage(updatedPoints);
-    });
-
-    // Punkte im Local Storage speichern
-    if (!restrictMovement) {
-        savePointsToLocalStorage([...getPointsFromLocalStorage(), { x: x, y: y }]);
-    }
-
-    return point;
-}
-
-function initializeEditor() {
-    const editor = document.getElementById('velocity-curve-editor');
-    editor.addEventListener('dblclick', event => {
-        if (event.button === 0) {
-            const x = event.clientX - editor.getBoundingClientRect().left;
-            const y = event.clientY - editor.getBoundingClientRect().top;
-            const point = createPoint(x, y);
-            editor.appendChild(point);
-            updateCanvas();
-        }
-    });
-}
-
-const canvas = document.getElementById('velocityCurveCanvas');
-const ctx = canvas.getContext('2d');
-
-function updateCanvas() {
-    const points = Array.from(document.getElementsByClassName('point')).map(point => ({
-        x: point.getBoundingClientRect().left - canvas.getBoundingClientRect().left + 5,
-        y: point.getBoundingClientRect().top - canvas.getBoundingClientRect().top + 5
-    }));
-
-    points.sort((a, b) => a.x - b.x);
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-
-    for (let i = 1; i < points.length - 1; i++) {
-        const xc = (points[i].x + points[i + 1].x) / 2;
-        const yc = (points[i].y + points[i + 1].y) / 2;
-        ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
-    }
-    ctx.quadraticCurveTo(points[points.length - 1].x, points[points.length - 1].y, points[points.length - 1].x, points[points.length - 1].y);
-
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.fillStyle = 'red';
-    points.forEach(point => {
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
-        ctx.fill();
-    });
-    // Punkte im Local Storage speichern
-    savePointsToLocalStorage(points);
-}
-
-function savePointsToLocalStorage(points) {
-    localStorage.setItem('velocityCurvePoints', JSON.stringify(points));
-}
-
-function getPointsFromLocalStorage() {
-    const storedPoints = localStorage.getItem('velocityCurvePoints');
-    return storedPoints ? JSON.parse(storedPoints) : [];
-}
-
-function loadPointsFromLocalStorage() {
-    const storedPoints = getPointsFromLocalStorage();
-    const editor = document.getElementById('velocity-curve-editor');
-
-    if (storedPoints.length === 0) {
-        // Start- und Endpunkte hinzufügen, wenn sie nicht im Local Storage sind
-        const startPoint = createPoint(0, canvas.height, true);
-        const endPoint = createPoint(canvas.width, 0, true);
-        editor.appendChild(startPoint);
-        editor.appendChild(endPoint);
-    } else {
-        storedPoints.forEach((point, index) => {
-            const restrictMovement = (index === 0 || index === storedPoints.length - 1);
-            const createdPoint = createPoint(point.x, point.y, restrictMovement);
-            editor.appendChild(createdPoint);
-        });
-    }
-}
-
 document.getElementById('openAdvancedSettings').addEventListener('click', toggleCurveEditorDisplay);
-
-function toggleCurveEditorDisplay() {
-    const curveEditor = document.getElementById('velocity-curve-editor');
-    if (curveEditor.style.visibility === "hidden") {
-        curveEditor.style.visibility = "visible";
-    } else {
-        curveEditor.style.visibility = "hidden";
-    }
-}
 
 
 window.addEventListener('load', () => {
-    initializeEditor();
-    loadPointsFromLocalStorage();
-    updateCanvas();
-    toggleCurveEditorDisplay();
     if (localStorage.getItem('playlist'))
         loadLocalPlaylist();
 });

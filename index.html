@@ -7,6 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="components/header/header.css">
+    <link rel="stylesheet" href="components/curve-editor/curve-editor.css">
+    <link rel="stylesheet" href="components/recorder/recorder.css">
+    <link rel="stylesheet" href="components/piano/piano.css">
+    <link rel="stylesheet" href="mediaquery/mediaquery.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;800&family=Outfit:wght@200&family=Rowdies:wght@700&display=swap"
         rel="stylesheet">
@@ -47,10 +52,7 @@
 </header>
 
 <body>
-    <div class="startScreen" onclick="this.style.opacity = '0';
-    setTimeout(() => {
-        this.style.display = 'none'; 
-    }, 1000);">
+    <div class="startScreen">
         <strong>CLICK ANYWHERE TO START</strong>
     </div>
     <div class="instructions">
@@ -95,9 +97,12 @@
                 <select class="settingsItem" id="songSelect">
                 </select>
     </div>
-
+    
+    <script src="./components/recorder/recorder.js"></script>
+    <script src="./components/curve-editor/curve-editor.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tone/build/Tone.js"></script>
     <script src="script.js"></script>
+    <script src="./mediaquery/mediaquery.js"></script>
 </body>
 
 </html>

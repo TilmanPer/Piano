@@ -1,0 +1,12 @@
+@media screen and (max-width: 1601px) {
+    .instructions {
+        font-size: 20px;
+    }
+}
+
+@media screen and (max-width: 1145px) {
+    .instructions {
+        margin-top: 50px;
+        font-size: 15px;
+    }
+}
