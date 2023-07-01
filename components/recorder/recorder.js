@@ -4,6 +4,7 @@ let isRecording = false;
 let timestamp = 0; // Used to calculate the timing of recorded events
 let isPlaying = false;
 
+const playPauseBtn = document.getElementById("playPauseBtn");
 
 function startRecording() {
     console.log("Recording Started");
@@ -51,6 +52,7 @@ function playSong(index) {
     }
     if (!isRecording && playlist.length > 0) {
         isPlaying = true;
+        playPauseBtn.innerHTML = "⏸︎";
         console.log("Playing Song " + index);
         playlist[index].forEach(recordedEvent => {
             setTimeout(() => {
@@ -62,6 +64,7 @@ function playSong(index) {
         setTimeout(() => {
             console.log("Song " + index + " finished playing");
             isPlaying = false;
+            playPauseBtn.innerHTML = "▶";
         }, playlist[index][playlist[index].length - 1].timing);
     }
 }
@@ -71,10 +74,12 @@ songSelect.addEventListener("change", function () {
     songSelect.selectedIndex
         = songSelect.selectedIndex;
 });
+
 checkbox = document.getElementById('toggleRecording')
 checkbox.addEventListener('keydown', event => {
     if (event.code === 'Space') {
         event.preventDefault();
     }
 });
+
 checkbox.checked = false;

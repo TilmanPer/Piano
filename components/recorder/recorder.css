@@ -27,6 +27,21 @@
   margin-top: -5px;
 }
 
+.recordNavigate:hover {
+  cursor: pointer;
+  filter: brightness(0.5);
+}
+
+.recordNavigate:active {
+  filter: brightness(0.2);
+  transform: scale(0.95);
+}
+
+#playPauseBtn{
+  height: 50px;
+  width: 50px;
+}
+
 .toggleRecording {
   appearance: none;
   background-color: rgb(255, 88, 88);

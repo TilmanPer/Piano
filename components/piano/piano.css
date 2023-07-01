@@ -62,8 +62,6 @@ border-bottom-right-radius: 20px;
   z-index: 1;
 }
 
-
-
 .currently-pressed {
   background: var(--highLightedColor);
 }

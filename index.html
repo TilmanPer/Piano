@@ -45,7 +45,6 @@
             <option value="Vintage_Upright">Vintage</option>
             <option value="Vintage_Upright_Soft">Vintage Soft</option>
             <option value="mppclassic">mpp</option>
-            <option class="not-ready">Rhodes</option>
             <option value="Music_Box">Music Box</option>
         </select>
     </div>
@@ -87,8 +86,9 @@
                 playSong(songSelect.selectedIndex = songSelect.selectedIndex > 0 ? songSelect.selectedIndex-1 : songSelect.selectedIndex = playlist.length -1)
                 ">
             << </button>
-                <button type="button" class="recordNavigate" style="margin-left: 5px; margin-right:5px;" onclick="!isPlaying ? playSong(songSelect.selectedIndex) : '';
-        this.innerHTML = isPlaying ? '<!-- ⏸ -->▶' : '▶'">▶
+                <button id="playPauseBtn" type="button" class="recordNavigate"
+                    style="margin-left: 5px; margin-right:5px;"
+                    onclick="!isPlaying ? playSong(songSelect.selectedIndex) : '';">▶
                 </button>
                 <button type="button" class="recordNavigate" onclick="if(!isPlaying)
                 playSong(songSelect.selectedIndex = songSelect.selectedIndex+1 < playlist.length ? songSelect.selectedIndex+1 : songSelect.selectedIndex = 0)
@@ -97,7 +97,7 @@
                 <select class="settingsItem" id="songSelect">
                 </select>
     </div>
-    
+
     <script src="./components/recorder/recorder.js"></script>
     <script src="./components/curve-editor/curve-editor.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tone/build/Tone.js"></script>
