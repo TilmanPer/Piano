@@ -81,21 +81,17 @@
     <div class="recordNavigateContainer">
         <input type="checkbox" class="recordNavigate toggleRecording" id="toggleRecording"
             onchange="isRecording ? stopRecording() : startRecording();" checked="false">
-        <button type="button" class="recordNavigate" onclick="
-            if(!isPlaying)
-                playSong(songSelect.selectedIndex = songSelect.selectedIndex > 0 ? songSelect.selectedIndex-1 : songSelect.selectedIndex = playlist.length -1)
-                ">
+        <button type="button" class="recordNavigate" onclick="prevSong()">
             << </button>
                 <button id="playPauseBtn" type="button" class="recordNavigate"
-                    style="margin-left: 5px; margin-right:5px;"
-                    onclick="!isPlaying ? playSong(songSelect.selectedIndex) : '';">▶
+                    style="margin-left: 5px; margin-right:5px;" onclick="playPause()">▶
                 </button>
-                <button type="button" class="recordNavigate" onclick="if(!isPlaying)
-                playSong(songSelect.selectedIndex = songSelect.selectedIndex+1 < playlist.length ? songSelect.selectedIndex+1 : songSelect.selectedIndex = 0)
+                <button type="button" class="recordNavigate" onclick="nextSong()
                 ">>>
                 </button>
                 <select class="settingsItem" id="songSelect">
                 </select>
+                <button id="deleteBtn" type="button" class="recordNavigate" onclick="deleteCurrentSong()">🗑️</button>
     </div>
 
     <script src="./components/recorder/recorder.js"></script>
